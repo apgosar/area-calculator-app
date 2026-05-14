@@ -75,11 +75,3 @@ Write-Host "------------------------------------------------" -ForegroundColor C
 Write-Host "  Deployment complete!" -ForegroundColor Green
 Write-Host "  App URL : $SERVICE_URL" -ForegroundColor Yellow
 Write-Host "------------------------------------------------" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "Test checklist:" -ForegroundColor Gray
-Write-Host "  1. Open $SERVICE_URL" -ForegroundColor Gray
-Write-Host "  2. Log in with Employee ID: vinitvds" -ForegroundColor Gray
-Write-Host "  3. Enter rooms and click Calculate" -ForegroundColor Gray
-Write-Host "  4. Click Download PDF - verify it opens" -ForegroundColor Gray
-Write-Host "  5. Click the blue Download Excel Data button inside the PDF" -ForegroundColor Gray
-Write-Host ""
