@@ -66,7 +66,7 @@ Vite proxies all `/api/*` requests to Express automatically (`vite.config.js`).
 
 ### 3. Log in
 
-Employee ID: `vinitvds`
+Employee ID: `***`
 
 ### 4. Test the full flow
 
