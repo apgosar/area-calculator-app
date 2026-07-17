@@ -1,4 +1,5 @@
 FROM node:20-slim
+COPY lambda-adapter-dir/extensions/lambda-adapter /opt/extensions/lambda-adapter
 
 # Install Google Chrome Stable from Google's apt repo.
 # Chrome's apt package pulls in every system library it needs automatically —
@@ -16,7 +17,10 @@ RUN apt-get update \
 
 # Tell Puppeteer to skip downloading its own Chromium and use Chrome instead
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable \
+    HOME=/tmp \
+    XDG_CONFIG_HOME=/tmp \
+    XDG_CACHE_HOME=/tmp
 
 WORKDIR /app
 

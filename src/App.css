@@ -252,6 +252,20 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 
 .btn-add:hover { background: #eff6ff; }
 
+.btn-add-corner {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.btn-add-corner:hover {
+  background: #e2e8f0;
+}
+
 .btn-remove {
   width: 34px;
   height: 34px;

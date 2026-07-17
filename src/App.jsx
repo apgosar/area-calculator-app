@@ -1,10 +1,10 @@
 import { useState, useRef } from 'react';
 
 const INITIAL_ROOMS = [
-  { id: 1, name: 'Living Room', length: '', width: '' },
-  { id: 2, name: 'Kitchen',     length: '', width: '' },
-  { id: 3, name: 'Bedroom',     length: '', width: '' },
-  { id: 4, name: 'Bathroom',    length: '', width: '' },
+  { id: 1, name: 'Living Room', length: '', width: '', deductions: [] },
+  { id: 2, name: 'Kitchen',     length: '', width: '', deductions: [] },
+  { id: 3, name: 'Bedroom',     length: '', width: '', deductions: [] },
+  { id: 4, name: 'Bathroom',    length: '', width: '', deductions: [] },
 ];
 
 function areaLabel(unit) {
@@ -39,7 +39,7 @@ export default function App() {
 
   // ---- ROOM MANAGEMENT ----
   function addRoom() {
-    setRooms(prev => [...prev, { id: nextId, name: '', length: '', width: '' }]);
+    setRooms(prev => [...prev, { id: nextId, name: '', length: '', width: '', deductions: [] }]);
     setNextId(n => n + 1);
   }
 
@@ -49,6 +49,33 @@ export default function App() {
 
   function updateRoom(id, field, value) {
     setRooms(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r));
+  }
+
+  function addDeduction(roomId) {
+    setRooms(prev => prev.map(r => {
+      if (r.id === roomId) {
+        return { ...r, deductions: [...(r.deductions || []), { id: Date.now() + Math.random(), length: '', width: '' }] };
+      }
+      return r;
+    }));
+  }
+
+  function removeDeduction(roomId, deducId) {
+    setRooms(prev => prev.map(r => {
+      if (r.id === roomId) {
+        return { ...r, deductions: r.deductions.filter(d => d.id !== deducId) };
+      }
+      return r;
+    }));
+  }
+
+  function updateDeduction(roomId, deducId, field, value) {
+    setRooms(prev => prev.map(r => {
+      if (r.id === roomId) {
+        return { ...r, deductions: r.deductions.map(d => d.id === deducId ? { ...d, [field]: value } : d) };
+      }
+      return r;
+    }));
   }
 
   // ---- CALCULATE ----
@@ -82,7 +109,25 @@ export default function App() {
       const len = parseFloat(room.length);
       const wid = parseFloat(room.width);
       if (!isNaN(len) && len > 0 && !isNaN(wid) && wid > 0) {
-        const area = len * wid;
+        let area = len * wid;
+
+        let deductionArea = 0;
+        if (room.deductions) {
+          for (const deduc of room.deductions) {
+            const dLen = parseFloat(deduc.length);
+            const dWid = parseFloat(deduc.width);
+            if (!isNaN(dLen) && dLen > 0 && !isNaN(dWid) && dWid > 0) {
+              deductionArea += (dLen * dWid);
+            }
+          }
+        }
+
+        if (deductionArea >= area) {
+          alert(`Error in "${room.name || 'room'}": Corner deductions exceed or equal the total room area!`);
+          return;
+        }
+
+        area -= deductionArea;
         total += area;
         computed.push({ name: room.name || 'Unnamed Room', length: len, width: wid, area: area.toFixed(2) });
       }
@@ -251,34 +296,66 @@ export default function App() {
             {/* Room rows */}
             <div className="rooms-list">
               {rooms.map((room, idx) => (
-                <div className="room-row" key={room.id}>
-                  <input
-                    type="text"
-                    className="room-name"
-                    placeholder="Room name"
-                    value={room.name}
-                    onChange={e => updateRoom(room.id, 'name', e.target.value)}
-                  />
-                  <input
-                    type="number"
-                    className={`input-dim${errors[`${room.id}_len`] ? ' error' : ''}`}
-                    placeholder="Length"
-                    min="0"
-                    step="any"
-                    value={room.length}
-                    onChange={e => updateRoom(room.id, 'length', e.target.value)}
-                  />
-                  <input
-                    type="number"
-                    className={`input-dim${errors[`${room.id}_wid`] ? ' error' : ''}`}
-                    placeholder="Width"
-                    min="0"
-                    step="any"
-                    value={room.width}
-                    onChange={e => updateRoom(room.id, 'width', e.target.value)}
-                  />
-                  {idx >= 4 && (
-                    <button type="button" className="btn-remove" onClick={() => removeRoom(room.id)}>✕</button>
+                <div key={room.id} className="room-container" style={{ marginBottom: '12px', padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px' }}>
+                  <div className="room-row">
+                    <input
+                      type="text"
+                      className="room-name"
+                      placeholder="Room name"
+                      value={room.name}
+                      onChange={e => updateRoom(room.id, 'name', e.target.value)}
+                    />
+                    <input
+                      type="number"
+                      className={`input-dim${errors[`${room.id}_len`] ? ' error' : ''}`}
+                      placeholder="Length"
+                      min="0"
+                      step="any"
+                      value={room.length}
+                      onChange={e => updateRoom(room.id, 'length', e.target.value)}
+                    />
+                    <input
+                      type="number"
+                      className={`input-dim${errors[`${room.id}_wid`] ? ' error' : ''}`}
+                      placeholder="Width"
+                      min="0"
+                      step="any"
+                      value={room.width}
+                      onChange={e => updateRoom(room.id, 'width', e.target.value)}
+                    />
+                    <button type="button" className="btn-add-corner" onClick={() => addDeduction(room.id)} title="Add corner deduction">➖ Corner</button>
+                    {idx >= 4 && (
+                      <button type="button" className="btn-remove" onClick={() => removeRoom(room.id)}>✕</button>
+                    )}
+                  </div>
+                  
+                  {room.deductions && room.deductions.length > 0 && (
+                    <div className="deductions-list" style={{ marginTop: '8px', marginLeft: '24px', paddingLeft: '12px', borderLeft: '2px solid #cbd5e1' }}>
+                      {room.deductions.map(deduc => (
+                        <div className="room-row deduction-row" key={deduc.id} style={{ marginTop: '8px', padding: '6px 12px', background: 'white' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#64748b', width: '120px', display: 'inline-block' }}>Deduct Corner</span>
+                          <input
+                            type="number"
+                            className="input-dim"
+                            placeholder="Length"
+                            min="0"
+                            step="any"
+                            value={deduc.length}
+                            onChange={e => updateDeduction(room.id, deduc.id, 'length', e.target.value)}
+                          />
+                          <input
+                            type="number"
+                            className="input-dim"
+                            placeholder="Width"
+                            min="0"
+                            step="any"
+                            value={deduc.width}
+                            onChange={e => updateDeduction(room.id, deduc.id, 'width', e.target.value)}
+                          />
+                          <button type="button" className="btn-remove" onClick={() => removeDeduction(room.id, deduc.id)}>✕</button>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               ))}
